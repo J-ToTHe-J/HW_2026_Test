@@ -8,4 +8,8 @@ public class StartMenubutton : MonoBehaviour
     {
         SceneManager.LoadSceneAsync("GameScene");
     }
+    public void Instructions()
+    {
+        SceneManager.LoadSceneAsync("Instructions");
+    }
 }

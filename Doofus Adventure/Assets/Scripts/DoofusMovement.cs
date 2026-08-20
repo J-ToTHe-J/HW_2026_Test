@@ -6,7 +6,7 @@ public class DoofusMovement : MonoBehaviour
     private Pulpit currentPulpit;
 
     public float raycastDistance = 2f;
-    public LayerMask pulpitLayer; // optional, can leave as Everything
+    public LayerMask pulpitLayer;
 
     void Start()
     {
@@ -16,11 +16,16 @@ public class DoofusMovement : MonoBehaviour
 
     void Update()
     {
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
+        if (GameManager.Instance.IsGameActive)
+        {
+            float h = Input.GetAxis("Horizontal");
+            float v = Input.GetAxis("Vertical");
 
-        Vector3 move = new Vector3(h, 0, v) * speed * Time.deltaTime;
-        transform.position += move;
+            Vector3 direction = new Vector3(h, 0, v);
+            if (direction.magnitude > 1f) direction.Normalize();
+            Vector3 move = direction * speed * Time.deltaTime;
+            transform.position += move;
+        }
 
         CheckPulpitBelow();
 
@@ -43,7 +48,6 @@ public class DoofusMovement : MonoBehaviour
             {
                 if (pulpit != currentPulpit)
                 {
-                    // landed on a NEW pulpit
                     if (currentPulpit != null)
                         currentPulpit.SetOccupied(false);
 
@@ -53,13 +57,11 @@ public class DoofusMovement : MonoBehaviour
                     ScoreManager.Instance.RegisterLanding(pulpit);
                 }
 
-                // always update timer UI while standing on any pulpit
                 TimerUI.Instance.UpdateTimer(pulpit.lifeTime);
                 return;
             }
         }
 
-        // no pulpit found below — Doofus is in the air / off the edge
         if (currentPulpit != null)
         {
             currentPulpit.SetOccupied(false);

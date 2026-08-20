@@ -8,16 +8,22 @@ public class ScoreManager : MonoBehaviour
     public int score = 0;
     private HashSet<Pulpit> landedPulpits = new HashSet<Pulpit>();
 
-    public TMPro.TextMeshProUGUI scoreText; // assign in Inspector
+    public TMPro.TextMeshProUGUI scoreText;
 
     void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
     }
 
-    public void RegisterPulpit(Pulpit pulpit, Vector3 pos)
+    void Start()
     {
-        // optional: track spawn if needed later
+        if (scoreText != null)
+            scoreText.text = "Score: 0";
     }
 
     public void RegisterLanding(Pulpit pulpit)
@@ -27,7 +33,7 @@ public class ScoreManager : MonoBehaviour
             landedPulpits.Add(pulpit);
             score++;
             if (scoreText != null)
-                scoreText.text = score.ToString();
+                scoreText.text = "Score: " + score;
         }
     }
 
@@ -36,6 +42,6 @@ public class ScoreManager : MonoBehaviour
         score = 0;
         landedPulpits.Clear();
         if (scoreText != null)
-            scoreText.text = "0";
+            scoreText.text = "Score: 0";
     }
 }
