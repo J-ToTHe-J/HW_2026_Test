@@ -1,12 +1,12 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    public GameObject startScreen;
     public GameObject gameOverScreen;
-    public GameObject gameplayRoot; // parent of Doofus + Spawner, disabled until Play pressed
+    public GameObject gameplayRoot;
 
     private bool isGameActive = false;
 
@@ -17,31 +17,27 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        startScreen.SetActive(true);
-        gameOverScreen.SetActive(false);
-        gameplayRoot.SetActive(false);
-    }
-
-    public void StartGame()
-    {
-        startScreen.SetActive(false);
         gameOverScreen.SetActive(false);
         gameplayRoot.SetActive(true);
         ScoreManager.Instance.ResetScore();
         isGameActive = true;
+        PulpitSpawner.Instance.BeginSpawning();
     }
 
     public void TriggerGameOver()
     {
         if (!isGameActive) return;
         isGameActive = false;
-        gameplayRoot.SetActive(false);
         gameOverScreen.SetActive(true);
     }
 
     public void RestartGame()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void BackToMainMenu()
+    {
+        SceneManager.LoadScene("MainMenu"); // exact scene name
     }
 }
