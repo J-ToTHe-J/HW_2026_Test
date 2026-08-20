@@ -12,4 +12,8 @@ public class StartMenubutton : MonoBehaviour
     {
         SceneManager.LoadSceneAsync("Instructions");
     }
+    public void BackToMenu()
+    {
+        SceneManager.LoadSceneAsync("StartMenu");
+    }
 }

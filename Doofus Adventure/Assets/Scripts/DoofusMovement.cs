@@ -8,6 +8,9 @@ public class DoofusMovement : MonoBehaviour
     public float raycastDistance = 2f;
     public LayerMask pulpitLayer;
 
+    public float fallGracePeriod = 0.3f; // seconds allowed with no pulpit below before Game Over
+    private float timeSinceLastGrounded = 0f;
+
     void Start()
     {
         var diary = ConfigLoader.Load();
@@ -21,9 +24,7 @@ public class DoofusMovement : MonoBehaviour
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
 
-            Vector3 direction = new Vector3(h, 0, v);
-            if (direction.magnitude > 1f) direction.Normalize();
-            Vector3 move = direction * speed * Time.deltaTime;
+            Vector3 move = new Vector3(h, 0, v) * speed * Time.deltaTime;
             transform.position += move;
         }
 
@@ -46,6 +47,8 @@ public class DoofusMovement : MonoBehaviour
 
             if (pulpit != null)
             {
+                timeSinceLastGrounded = 0f; // reset grace timer, we're on solid ground
+
                 if (pulpit != currentPulpit)
                 {
                     if (currentPulpit != null)
@@ -62,10 +65,18 @@ public class DoofusMovement : MonoBehaviour
             }
         }
 
+        // no pulpit detected below this frame
+        timeSinceLastGrounded += Time.deltaTime;
+
         if (currentPulpit != null)
         {
             currentPulpit.SetOccupied(false);
             currentPulpit = null;
+        }
+
+        if (timeSinceLastGrounded >= fallGracePeriod)
+        {
+            GameManager.Instance.TriggerGameOver();
         }
     }
 }
