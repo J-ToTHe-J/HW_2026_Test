@@ -3,52 +3,66 @@ using UnityEngine;
 public class DoofusMovement : MonoBehaviour
 {
     private float speed;
-    private Rigidbody rb;
     private Pulpit currentPulpit;
+
+    public float raycastDistance = 2f;
+    public LayerMask pulpitLayer; // optional, can leave as Everything
 
     void Start()
     {
         var diary = ConfigLoader.Load();
         speed = diary.player_data.speed;
-        rb = GetComponent<Rigidbody>();
     }
 
     void Update()
     {
-        float h = Input.GetAxis("Horizontal"); // A/D or arrows
-        float v = Input.GetAxis("Vertical");   // W/S or arrows
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
 
         Vector3 move = new Vector3(h, 0, v) * speed * Time.deltaTime;
         transform.position += move;
 
-        // Fall check — if Doofus drops below a threshold, game over
+        CheckPulpitBelow();
+
         if (transform.position.y < -5f)
         {
             GameManager.Instance.TriggerGameOver();
         }
     }
 
-    void OnTriggerEnter(Collider other)
+    void CheckPulpitBelow()
     {
-        Pulpit pulpit = other.GetComponent<Pulpit>();
-        if (pulpit != null)
+        Ray ray = new Ray(transform.position, Vector3.down);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, raycastDistance))
         {
-            if (currentPulpit != null)
-                currentPulpit.SetOccupied(false);
+            Pulpit pulpit = hit.collider.GetComponent<Pulpit>();
 
-            currentPulpit = pulpit;
-            pulpit.SetOccupied(true);
+            if (pulpit != null)
+            {
+                if (pulpit != currentPulpit)
+                {
+                    // landed on a NEW pulpit
+                    if (currentPulpit != null)
+                        currentPulpit.SetOccupied(false);
 
-            ScoreManager.Instance.RegisterLanding(pulpit);
+                    currentPulpit = pulpit;
+                    pulpit.SetOccupied(true);
+
+                    ScoreManager.Instance.RegisterLanding(pulpit);
+                }
+
+                // always update timer UI while standing on any pulpit
+                TimerUI.Instance.UpdateTimer(pulpit.lifeTime);
+                return;
+            }
         }
-    }
 
-    void OnTriggerExit(Collider other)
-    {
-        Pulpit pulpit = other.GetComponent<Pulpit>();
-        if (pulpit != null && pulpit == currentPulpit)
+        // no pulpit found below — Doofus is in the air / off the edge
+        if (currentPulpit != null)
         {
-            pulpit.SetOccupied(false);
+            currentPulpit.SetOccupied(false);
             currentPulpit = null;
         }
     }
