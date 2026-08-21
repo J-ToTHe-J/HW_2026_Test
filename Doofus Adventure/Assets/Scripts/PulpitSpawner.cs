@@ -38,15 +38,30 @@ public class PulpitSpawner : MonoBehaviour
         maxLife = diary.pulpit_data.max_pulpit_destroy_time;
         spawnTriggerTime = diary.pulpit_data.pulpit_spawn_time;
 
-        activePulpits.Clear();
-        lastPos = Vector3.zero;
+        // clear any leftovers from a previous run
+        while (activePulpits.Count > 0)
+        {
+            var p = activePulpits.Dequeue();
+            if (p != null)
+                Destroy(p.gameObject);
+        }
+
         hasSecondLast = false;
+        lastPos = Vector3.zero;
 
         SpawnPulpit(lastPos);
     }
 
     void SpawnPulpit(Vector3 pos)
     {
+        // enforce max 2 active pulpits — force-remove the oldest if a 3rd would exist
+        if (activePulpits.Count >= 2)
+        {
+            Pulpit oldest = activePulpits.Dequeue();
+            if (oldest != null)
+                Destroy(oldest.gameObject);
+        }
+
         GameObject go = Instantiate(pulpitPrefab, pos, Quaternion.identity);
         Pulpit pulpit = go.GetComponent<Pulpit>();
 
@@ -72,9 +87,7 @@ public class PulpitSpawner : MonoBehaviour
 
     void HandleExpired(Pulpit pulpit)
     {
-        if (activePulpits.Count > 0 && activePulpits.Peek() == pulpit)
-            activePulpits.Dequeue();
-
+        // if it already got force-removed above, this just no-ops safely
         if (pulpit.IsOccupied)
         {
             GameManager.Instance.TriggerGameOver();
@@ -96,8 +109,6 @@ public class PulpitSpawner : MonoBehaviour
         foreach (var dir in directions)
         {
             Vector3 candidate = current + dir * pulpitSize;
-
-            // avoid placing it exactly where the previous-previous pulpit was
             if (candidate != previous)
                 valid.Add(candidate);
         }

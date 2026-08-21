@@ -18,11 +18,7 @@ public class TimerUI : MonoBehaviour
 
     public void UpdateTimer(float value)
     {
-        if (timerText == null)
-        {
-            Debug.LogError("TimerUI: timerText field is not assigned!");
-            return;
-        }
-        timerText.text = Mathf.Max(value, 0f).ToString("F2");
+        if (timerText != null)
+            timerText.text = Mathf.Max(value, 0f).ToString("F2");
     }
 }

@@ -24,7 +24,7 @@ public class DoofusMovement : MonoBehaviour
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
 
-            Vector3 move = new Vector3(h, 0, v) * speed * Time.deltaTime;
+            Vector3 move = new Vector3(h, 0, v) * speed * Time.deltaTime *1.5f;
             transform.position += move;
         }
 
